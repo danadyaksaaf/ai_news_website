@@ -117,5 +117,46 @@ class NewsApiService {
       return AITopic.writing;
     }
   }
+  
+  // Search news by query
+  static Future<List<NewsArticle>> searchNews(String query, {int page = 1}) async {
+    if (!isConfigured) {
+      throw Exception('News API key not configured. Please set your API key.');
+    }
+    
+    // Encode the query for URL
+    final encodedQuery = Uri.encodeComponent(query);
+    
+    final url = Uri.parse(
+      '$_baseUrl/everything?q=$encodedQuery&sortBy=relevancy&language=en&pageSize=20&page=$page&apiKey=$_apiKey'
+    );
+    
+    try {
+      final response = await http.get(url);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final articles = data['articles'] as List;
+        
+        return articles.map((article) => NewsArticle(
+          id: article['url'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          title: article['title'] ?? 'No Title',
+          description: article['description'] ?? '',
+          imageUrl: article['urlToImage'] ?? 'https://via.placeholder.com/800x400',
+          source: article['source']?['name'] ?? 'Unknown',
+          publishedAt: DateTime.tryParse(article['publishedAt'] ?? '') ?? DateTime.now(),
+          topic: _categorizeArticle(article['title'] ?? ''),
+        )).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Invalid API key. Please check your News API key.');
+      } else if (response.statusCode == 429) {
+        throw Exception('Rate limit exceeded. Please try again later.');
+      } else {
+        throw Exception('Failed to search news: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error searching news: $e');
+    }
+  }
 }
 
