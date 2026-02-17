@@ -1542,69 +1542,48 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: CustomScrollView(
-        slivers: [
-          // App Bar with Image
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            backgroundColor: Colors.white,
-            leading: GestureDetector(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              // Content
+              SliverToBoxAdapter(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: _isMobile
+                      ? _buildMobileContent(topicColor)
+                      : _buildDesktopContent(topicColor),
+                ),
+              ),
+            ],
+          ),
+          // Floating Back Button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            left: 16,
+            child: GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                margin: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withValues(alpha: 0.95),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.arrow_back,
                   color: Color(0xFF1F2937),
+                  size: 24,
                 ),
               ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: widget.article.imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: const Color(0xFFF3F4F6),
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: const Color(0xFFF3F4F6),
-                      child: const Icon(Icons.image_not_supported, size: 50),
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.7),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Content
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: _isMobile
-                  ? _buildMobileContent(topicColor)
-                  : _buildDesktopContent(topicColor),
             ),
           ),
         ],
@@ -1615,10 +1594,12 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   // Mobile layout (stacked)
   Widget _buildMobileContent(Color topicColor) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildHeroImage(),
+          const SizedBox(height: 24),
           _buildArticleContent(topicColor),
           const SizedBox(height: 40),
           _buildRelatedNewsSection(topicColor),
@@ -1630,22 +1611,68 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   // Desktop layout (side-by-side)
   Widget _buildDesktopContent(Color topicColor) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(32),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Main article (left side - 60%)
+          // Main article with hero image (left side - 60%)
           Expanded(
             flex: 6,
-            child: _buildArticleContent(topicColor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeroImage(),
+                const SizedBox(height: 24),
+                _buildArticleContent(topicColor),
+              ],
+            ),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 32),
           // Related news (right side - 40%)
           Expanded(
             flex: 4,
             child: _buildRelatedNewsSection(topicColor),
           ),
         ],
+      ),
+    );
+  }
+
+  // Hero Image Widget
+  Widget _buildHeroImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: widget.article.imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: const Color(0xFFF3F4F6),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: const Color(0xFFF3F4F6),
+                child: const Icon(Icons.image_not_supported, size: 50),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.3),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1866,15 +1893,15 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
           ],
         ),
         const SizedBox(height: 16),
-        // Related news grid (2x2)
+        // Related news grid
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: _isMobile ? 2 : 1,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: 0.85,
+            childAspectRatio: _isMobile ? 0.85 : 1.2,
           ),
           itemCount: relatedNews.length,
           itemBuilder: (context, index) {
