@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import '../home_page.dart';
 
 class NewsApiService {
-  // TODO: Replace with your actual News API key
-  static String? _apiKey = 'e51febd685bd45a4925a96e7f4084af5';
+  static String? _apiKey;
   
   static const String _baseUrl = 'https://newsapi.org/v2';
   
