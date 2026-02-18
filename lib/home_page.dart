@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'news_api_service.dart';
+import 'about_page.dart';
 
 // AI Topic Categories
 enum AITopic { coding, designing, writing }
@@ -327,9 +328,14 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _buildNavItem('Home', isSelected: true),
                     const SizedBox(width: 24),
-                    _buildNavItem('Categories'),
+                    _buildNavItem('Categories', onTap: () {}),
                     const SizedBox(width: 24),
-                    _buildNavItem('About'),
+                    _buildNavItem('About', onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AboutPage()),
+                      );
+                    }),
                     const SizedBox(width: 24),
                     IconButton(
                       icon: const Icon(Icons.search, color: Color(0xFF6B7280)),
@@ -349,9 +355,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildNavItem(String title, {bool isSelected = false}) {
+  Widget _buildNavItem(String title, {bool isSelected = false, VoidCallback? onTap}) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap ?? () {},
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
