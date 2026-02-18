@@ -7,7 +7,7 @@ import 'news_api_service.dart';
 void main() {
   // TODO: Replace with your actual News API key
   // Get your free API key at: https://newsapi.org/register
-  const String newsApiKey = 'YOUR_API_KEY_HERE';
+  const String newsApiKey = 'e51febd685bd45a4925a96e7f4084af5';
   
   // Initialize the API key
   if (newsApiKey != 'YOUR_API_KEY_HERE') {
